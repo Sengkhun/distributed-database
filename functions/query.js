@@ -1,4 +1,5 @@
-import { toulkork, sensok } from '../database';
+import sensok from '../database/sensok';
+import toulkork from '../database/toulkork';
 
 export const query = async (sql) => {
 

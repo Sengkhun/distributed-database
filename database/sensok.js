@@ -1,7 +1,4 @@
-import sql from 'sql-query';
 import Database from '../mysql';
-
-export const sqlQuery = sql.Query();
 
 const config = {
   host: process.env.DB_HOST_SENSOK,
@@ -17,14 +14,5 @@ export default async (sql, args) => {
   const response = await database.query(sql, args);
   await database.close();
   return response;
-
-};
-
-export const findOne = async (sql, args) => {
-  
-  const database = new Database(config);
-  const response = await database.query(sql, args);
-  await database.close();
-  return response[0] || null;
 
 };
