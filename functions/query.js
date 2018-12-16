@@ -1,13 +1,10 @@
-import sql from 'sql-query';
+import { toulkork, sensok } from '../database';
 
-const sqlQuery = sql.Query();
-const sqlSelect = sqlQuery.select();
-const sqlInsert = sqlQuery.insert();
-const sqlUpdate = sqlQuery.update();
+export const query = async (sql) => {
 
-export {
-  sqlQuery,
-  sqlSelect,
-  sqlInsert,
-  sqlUpdate
-}
+  const tk = await toulkork(sql);
+  const ss = await sensok(sql);
+
+  return [ ...tk, ...ss ];
+
+};
