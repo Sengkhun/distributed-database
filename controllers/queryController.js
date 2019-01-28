@@ -1,12 +1,13 @@
 import response from './response';
-import { query } from '../functions/query';
+import { query, queryOptimization } from '../functions/query';
 
 export const queryController = async (req, res, next) => {
   
   try {
 
     const { sql } = req.body;
-    const data = await query(sql);
+    const data = await queryOptimization(sql);
+    // const data = await query(sql);
 
     response(res, { data });
     
