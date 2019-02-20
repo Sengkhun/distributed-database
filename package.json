@@ -4,7 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon --exec babel-node app.js",
+    "client-install": "cd client && npm install",
+    "client": "npm start --prefix client",
+    "server": "nodemon --exec babel-node app.js",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
     "prod": "babel-node app.js"
   },
   "author": "",
@@ -16,6 +19,7 @@
     "babel-preset-stage-3": "6.24.1",
     "body-parser": "1.18.3",
     "check-types": "7.4.0",
+    "concurrently": "^4.1.0",
     "connect-timeout": "1.9.0",
     "db-migrate-mysql": "1.1.10",
     "dotenv": "6.2.0",

@@ -2,4 +2,5 @@
 database.json
 node_modules
 package-lock.json
+rawData
 yarn.lock

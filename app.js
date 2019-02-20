@@ -4,8 +4,8 @@ import timeout from 'connect-timeout';
 
 // get env variables
 import 'dotenv/config';
-import routes from './routes';
-import errorHandler from './errorHandler';
+import routes from './server/routes';
+import errorHandler from './server/errorHandler';
 
 const app = express();
 const host = process.env.HOST;
