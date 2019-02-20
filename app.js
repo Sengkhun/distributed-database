@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import timeout from 'connect-timeout';
+// import timeout from 'connect-timeout';
 
 // get env variables
 import 'dotenv/config';
@@ -11,7 +11,7 @@ const app = express();
 const host = process.env.HOST;
 const port = process.env.PORT;
 
-app.use(timeout('15s'));
+// app.use(timeout('15s'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
