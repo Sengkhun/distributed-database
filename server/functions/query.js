@@ -6,7 +6,7 @@ import toulkork from '../database/toulkork';
 
 import { removeLastComma } from './helper';
 
-const QUERY_KEYWORDS = ['SELECT', 'FROM', 'WHERE'];
+const QUERY_KEYWORDS = ['SELECT', 'FROM', 'LIMIT', 'WHERE'];
 
 export const queryOptimization = async sql => {
   
@@ -32,6 +32,10 @@ export const queryOptimization = async sql => {
       case 'FROM':
         sensokQuery += `FROM ${result.FROM} `;
         break;
+
+      case 'LIMIT':
+        sensokQuery += `LIMIT ${result.LIMIT} `;
+        break;
         
     }
   });
@@ -55,12 +59,13 @@ export const queryOptimization = async sql => {
       case 'FROM':
         toulkorkQuery += `FROM ${result.FROM} `;
         break;
+
+      case 'LIMIT':
+        toulkorkQuery += `LIMIT ${result.LIMIT} `;
+        break;
         
     }
   });
-
-  sensokQuery += ' LIMIT 10';
-  toulkorkQuery += ' LIMIT 10';
 
   const ss = await sensok(sensokQuery);
   const tk = await toulkork(toulkorkQuery);
@@ -78,7 +83,9 @@ export const queryOptimization = async sql => {
 
   // if there are still element left in tk
   _.forEach(tk, item => {
-    merged.push(item);
+    if (item) {
+      merged.push(item);
+    }
   });
 
   return _.sortBy(merged, ['id']);
@@ -107,12 +114,12 @@ export const querySplitter = async sql => {
     if (idx < length)
       end = listIndex[idx + 1];
     else
-      end = sql.length - 1;
+      end = sql.length;
 
-    const result = sql.substr(start, end);
+    const result = sql.substring(start, end);
     const spaceIndex = result.indexOf(' ');
-    const key = result.substr(0, spaceIndex).trim();
-    const value = result.substr(spaceIndex).trim();
+    const key = result.substring(0, spaceIndex).trim();
+    const value = result.substring(spaceIndex).trim();
 
     switch(key) {
       case 'SELECT':
@@ -121,6 +128,10 @@ export const querySplitter = async sql => {
 
       case 'FROM':
         data['FROM'] = value;
+        break;
+
+      case 'LIMIT':
+        data['LIMIT'] = value;
         break;
     }
 

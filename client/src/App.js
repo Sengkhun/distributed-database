@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import _ from 'lodash';
+import React, { PureComponent, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
 import { 
@@ -17,6 +16,8 @@ import {
   TextField,
   Typography
 } from '@material-ui/core';
+import Timer from 'react-compound-timer';
+import NumberFormat from 'react-number-format';
 import grey from '@material-ui/core/colors/grey';
 import ErrorHelper from './components/ErrorHelper';
 
@@ -84,7 +85,6 @@ const styles = theme => ({
   },
   output: {
     minHeight: 300,
-    maxHeight: 2000,
     marginBottom: theme.spacing.unit * 2,
     border: `1px solid ${grey[300]}`,
     borderRadius: 4,
@@ -100,10 +100,9 @@ const styles = theme => ({
 class App extends PureComponent {
 
   state = {
-    query: 'SELECT id, product_name, price, retailer FROM items',
+    query: 'SELECT id, product_name, price, retailer FROM items LIMIT 3',
     loading: false,
     count: 0,
-    time: 0,
     header: null,
     data: null,
     error: false,
@@ -126,7 +125,10 @@ class App extends PureComponent {
     if (this.state.loading) return;
 
     this.setState({ loading: true }, async _ => {
+      this.resetTimer();
+      this.startTimer();
       await this.query();
+      this.stopTimer();
       this.setState({ loading: false });
     });
   };
@@ -157,8 +159,9 @@ class App extends PureComponent {
   renderBody = () => {
     const { header, data } = this.state;
     const { classes } = this.props;
+    let count = 0;
     return data && data.map((item, idx) => {
-      if (!item) return null;
+      if (count++ > 200 || !item) return null;
       return (
         <TableRow hover key={idx}>
           { 
@@ -179,7 +182,6 @@ class App extends PureComponent {
       query,
       loading,
       count,
-      time,
       header,
       data,
       error,
@@ -248,11 +250,27 @@ class App extends PureComponent {
 
               <div className={classes.outputHeader}>
                 <Typography variant='subtitle2'>
-                  Output: {count} Row(s)
+                  Output: &nbsp;
+                  <NumberFormat 
+                    value={count} displayType={'text'} 
+                    thousandSeparator={true}
+                  />
                 </Typography>
                 
                 <Typography variant='subtitle2'>
-                  Time: {time}
+                  Time: &nbsp;
+                  <Timer startImmediately={false}>
+                    {({ start, stop, reset }) => {
+                      this.startTimer = start;
+                      this.stopTimer = stop;
+                      this.resetTimer = reset;
+                      return (
+                        <Fragment>
+                          <Timer.Seconds />s
+                        </Fragment>
+                      );
+                    }}
+                  </Timer>
                 </Typography> 
               </div>
 
