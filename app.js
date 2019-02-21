@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import cors from 'cors';
+import cors from './server/cors';
 // import timeout from 'connect-timeout';
 
 // get env variables

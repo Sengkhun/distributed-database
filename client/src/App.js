@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import _ from 'lodash';
 import { withStyles } from '@material-ui/core/styles';
 
 import { 
@@ -8,6 +9,11 @@ import {
   Icon,
   LinearProgress,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography
 } from '@material-ui/core';
@@ -36,13 +42,15 @@ const styles = theme => ({
     [theme.breakpoints.down('xs')]: {
       width: '100%'
     },
-    margin: '0 auto'
+    margin: '0 auto',
+    marginBottom: theme.spacing.unit * 5
   },
   form: {
     display: 'flex',
     flexFlow: 'column',
     padding: theme.spacing.unit * 5,
     paddingBottom: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit,
     [theme.breakpoints.down('xs')]: {
       paddingLeft: theme.spacing.unit * 3,
       paddingRight: theme.spacing.unit * 3,
@@ -67,12 +75,25 @@ const styles = theme => ({
   rightIcon: {
     marginLeft: theme.spacing.unit,
   },
+  outputHeader: {
+    display: 'flex',
+    flexFlow: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.unit * 2
+  },
   output: {
     minHeight: 300,
     maxHeight: 2000,
-    marginTop: theme.spacing.unit,
+    marginBottom: theme.spacing.unit * 2,
     border: `1px solid ${grey[300]}`,
     borderRadius: 4,
+  },
+  tableHeadCell: {
+    textTransform: 'capitalize'
+  },
+  tableCell: {
+    cursor: 'pointer'
   }
 });
 
@@ -81,6 +102,9 @@ class App extends PureComponent {
   state = {
     query: 'SELECT id, product_name, price, retailer FROM items',
     loading: false,
+    count: 0,
+    time: 0,
+    header: null,
     data: null,
     error: false,
     errorMessage: '',
@@ -109,14 +133,44 @@ class App extends PureComponent {
 
   query = async () => {
     const { query } = this.state;
-		console.log('* : query -> query', query)
     const { status, data, message } = await queryAPI(query);
-		console.log('* : query -> data', data)
     if (status === 200) {
-      this.setState({ data });
+      const firstData = data && data[0];
+      const header = Object.keys(firstData);
+      const count = data.length;
+      this.setState({ header, data, count });
     } else {
       this.handleShowError(message);
     }
+  };
+
+  renderHeader = () => {
+    const { header } = this.state;
+    const { classes } = this.props;
+    return header && header.map((item, idx) => (
+      <TableCell key={idx} className={classes.tableHeadCell}>
+        {item}
+      </TableCell>
+    ));
+  };
+
+  renderBody = () => {
+    const { header, data } = this.state;
+    const { classes } = this.props;
+    return data && data.map((item, idx) => {
+      if (!item) return null;
+      return (
+        <TableRow hover key={idx}>
+          { 
+            header && header.map((key, index) => (
+              <TableCell key={index} className={classes.tableCell}>
+                {item[key]}
+              </TableCell>
+            ))
+          }
+        </TableRow>
+      );
+    });
   };
 
   render() {
@@ -124,6 +178,9 @@ class App extends PureComponent {
     const { 
       query,
       loading,
+      count,
+      time,
+      header,
       data,
       error,
       errorMessage
@@ -189,17 +246,33 @@ class App extends PureComponent {
               />
               <br/><br/>
 
-              <Typography align='left' variant='subtitle1'>
-                Output
-              </Typography>
-
-              <div className={classes.output}>
-
+              <div className={classes.outputHeader}>
+                <Typography variant='subtitle2'>
+                  Output: {count} Row(s)
+                </Typography>
+                
+                <Typography variant='subtitle2'>
+                  Time: {time}
+                </Typography> 
               </div>
 
-            </form>
-            <br/>
+              <Paper className={classes.output}>
+                <Table>
+                  { header && 
+                    <TableHead>
+                      <TableRow>
+                        { this.renderHeader() }
+                      </TableRow>
+                    </TableHead> }
 
+                  { header && data && 
+                    <TableBody>
+                      { this.renderBody() }
+                    </TableBody> }
+                </Table>
+              </Paper>
+
+            </form>
           </Paper>
         </div>
       </Fade>

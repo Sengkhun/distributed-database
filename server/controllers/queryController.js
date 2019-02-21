@@ -6,9 +6,7 @@ export const queryController = async (req, res, next) => {
   try {
 
     const { sql } = req.body;
-		console.log('* : queryController -> sql', sql)
     const data = await queryOptimization(sql);
-		console.log('* : queryController -> data', data)
     // const data = await query(sql);
 
     response(res, { data });

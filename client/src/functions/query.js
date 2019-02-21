@@ -9,9 +9,7 @@ export const queryAPI = async sql => {
     
     const method = 'post';
     const url = `${process.env.API_URL}/query`;
-		console.log('* : url', url)
     const data = { sql };
-		console.log('* : data', data)
 
     return await fetch({ method, url, data });
 

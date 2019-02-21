@@ -59,6 +59,9 @@ export const queryOptimization = async sql => {
     }
   });
 
+  sensokQuery += ' LIMIT 10';
+  toulkorkQuery += ' LIMIT 10';
+
   const ss = await sensok(sensokQuery);
   const tk = await toulkork(toulkorkQuery);
 
