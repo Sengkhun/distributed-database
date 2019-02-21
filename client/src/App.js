@@ -14,6 +14,8 @@ import {
 import grey from '@material-ui/core/colors/grey';
 import ErrorHelper from './components/ErrorHelper';
 
+import { queryAPI } from './functions/query';
+
 const styles = theme => ({
   root: {
     position: 'absolute',
@@ -49,16 +51,14 @@ const styles = theme => ({
   title: {
     marginBottom: theme.spacing.unit * 4
   },
-  inputContainer: {
+  btnContainer: {
     display: 'flex',
-    flexFlow: 'row',
-    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
   },
   textField: {
     width: '100%'
   },
   btnSend: {
-    marginLeft: theme.spacing.unit * 2,
     height: 56,
     marginBottom: 8,
     paddingLeft: theme.spacing.unit * 3,
@@ -79,8 +79,9 @@ const styles = theme => ({
 class App extends PureComponent {
 
   state = {
-    query: '',
+    query: 'SELECT id, product_name, price, retailer FROM items',
     loading: false,
+    data: null,
     error: false,
     errorMessage: '',
   };
@@ -100,13 +101,22 @@ class App extends PureComponent {
     // if still loading, don't do anything
     if (this.state.loading) return;
 
-    this.setState({ loading: true }, _ => {
-      // const isEmpty = this.handleEmptyInput();
-      // if (!isEmpty) {
-      //   const { phone_number, password } = this.state;
-      //   this.login(phone_number, password);
-      // }
+    this.setState({ loading: true }, async _ => {
+      await this.query();
+      this.setState({ loading: false });
     });
+  };
+
+  query = async () => {
+    const { query } = this.state;
+		console.log('* : query -> query', query)
+    const { status, data, message } = await queryAPI(query);
+		console.log('* : query -> data', data)
+    if (status === 200) {
+      this.setState({ data });
+    } else {
+      this.handleShowError(message);
+    }
   };
 
   render() {
@@ -114,6 +124,7 @@ class App extends PureComponent {
     const { 
       query,
       loading,
+      data,
       error,
       errorMessage
     } = this.state;
@@ -141,24 +152,29 @@ class App extends PureComponent {
                 Distributed Database
               </Typography>
 
-              <div className={classes.inputContainer}>
-                <TextField
-                  required
-                  autoFocus
-                  label='Query'
-                  className={classes.textField}
-                  value={query}
-                  onChange={this.handleChange}
-                  name="query"
-                  margin='normal'
-                  variant='outlined'
-                />
+              <TextField
+                required
+                autoFocus
+                multiline
+                label='Query'
+                name="query"
+                margin='normal'
+                variant='outlined'
+                rows={4}
+                rowsMax={6}
+                disabled={loading}
+                className={classes.textField}
+                value={query}
+                onChange={this.handleChange}
+              />
 
+              <div className={classes.btnContainer}>              
                 <Button 
                   type='submit'
-                  size="medium" 
+                  size="small" 
                   color="primary" 
                   variant="contained"
+                  disabled={loading}
                   className={classes.btnSend}
                   onClick={this.handleSubmitClick}
                 >

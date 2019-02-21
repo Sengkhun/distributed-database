@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../App';
 
 // args = { method, url, data, headers }
 export default async function(args) {
@@ -11,8 +10,6 @@ export default async function(args) {
     headers
   } = args;
 
-  const authorization = await store.getState().AuthReducer.userToken;
-
   const response = await axios({
     method: method || 'get',
     url,
@@ -20,7 +17,6 @@ export default async function(args) {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': authorization,
       ...headers
     }
   });
