@@ -134,7 +134,7 @@ class App extends PureComponent {
     const { status, data, message } = await queryAPI(query);
     if (status === 200) {
       const firstData = data && data[0];
-      const header = Object.keys(firstData);
+      const header = firstData && Object.keys(firstData);
       const count = data.length;
       this.setState({ header, data, count });
     } else {

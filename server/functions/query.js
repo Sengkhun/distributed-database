@@ -77,8 +77,8 @@ export const queryOptimization = async sql => {
     sensok(sensokQuery), 
     toulkork(toulkorkQuery)
   ]);
-  const ss = results[0];
-  const tk = results[1];
+  // const ss = results[0];
+  // const tk = results[1];
 
   timer.stop();
   const queryTime = moment(timer.ms).format('s.S');
@@ -86,27 +86,14 @@ export const queryOptimization = async sql => {
   timer.reset();
   
   timer.start();
-  let merged = _.map(ss, function(item){
-    return _.extend(item, _.find(tk, ['id', item.id]));
-  });
-
-  // let merged = [];
-  // _.forEach(ss, (item, idx) => {
-  //   const index = _.findIndex(tk, { 'id': item.id });
-  //   if (index !== -1) {
-  //     merged.push({ ...item, ...tk[index] });
-  //     delete tk[index];
-  //   }
+  // let merged = _.map(ss, data => {
+  //   const index = _.findIndex(tk, ['id', data.id]);
+  //   const result = { ...data, ...tk[index] };
+  //   _.pullAt(tk, index);
+  //   return result;
   // });
 
-  // // if there are still element left in tk
-  // _.forEach(tk, item => {
-  //   if (item) {
-  //     merged.push(item);
-  //   }
-  // });
-
-  // merged = _.sortBy(merged, ['id']);
+  let merged = join(results, 'id');
 
   timer.stop();
   const joinTime = moment(timer.ms).format('s.S');
@@ -164,6 +151,26 @@ export const querySplitter = async sql => {
 
   return data;
 
+};
+
+export const join = async (data, key) => {
+
+  let index = 0;
+  const { length } = data;
+
+  while (index < length) {
+    const nextData = data[index + 1];
+    if (!nextData) break;
+
+    _.forEach(data[0], item => {
+      const matchedIndex = _.findIndex(nextData, [key, item[key]]);
+      _.extend(item, nextData[matchedIndex]);
+      _.pullAt(nextData, matchedIndex);
+    });
+    index++;
+  }
+  
+  return data[0];
 };
 
 export const query = async (sql) => {
