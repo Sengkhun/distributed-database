@@ -16,7 +16,6 @@ import {
   TextField,
   Typography
 } from '@material-ui/core';
-import Timer from 'react-compound-timer';
 import NumberFormat from 'react-number-format';
 import grey from '@material-ui/core/colors/grey';
 import ErrorHelper from './components/ErrorHelper';
@@ -39,7 +38,7 @@ const styles = theme => ({
   },
   container: {
     display: 'block',
-    width: 600,
+    width: 700,
     [theme.breakpoints.down('xs')]: {
       width: '100%'
     },
@@ -100,7 +99,7 @@ const styles = theme => ({
 class App extends PureComponent {
 
   state = {
-    query: 'SELECT id, product_name, price, retailer FROM items LIMIT 3',
+    query: 'SELECT id, retailer, product_name, price FROM items LIMIT 5000',
     loading: false,
     count: 0,
     header: null,
@@ -125,10 +124,7 @@ class App extends PureComponent {
     if (this.state.loading) return;
 
     this.setState({ loading: true }, async _ => {
-      this.resetTimer();
-      this.startTimer();
       await this.query();
-      this.stopTimer();
       this.setState({ loading: false });
     });
   };
@@ -256,22 +252,6 @@ class App extends PureComponent {
                     thousandSeparator={true}
                   />
                 </Typography>
-                
-                <Typography variant='subtitle2'>
-                  Time: &nbsp;
-                  <Timer startImmediately={false}>
-                    {({ start, stop, reset }) => {
-                      this.startTimer = start;
-                      this.stopTimer = stop;
-                      this.resetTimer = reset;
-                      return (
-                        <Fragment>
-                          <Timer.Seconds />s
-                        </Fragment>
-                      );
-                    }}
-                  </Timer>
-                </Typography> 
               </div>
 
               <Paper className={classes.output}>

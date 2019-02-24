@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import moment from 'moment';
+import Stopwatch from 'timer-stopwatch';
 
 import data from '../database/data';
 import sensok from '../database/sensok';
@@ -22,7 +24,7 @@ export const queryOptimization = async sql => {
         sensokQuery += 'SELECT ';
         _.forEach(item, value => {
           const isExist = data.sensok[`${tableName}`].includes(value);
-          if (isExist) {
+          if (isExist || value === '*') {
             sensokQuery += `${value}, `;
           }
         });
@@ -36,7 +38,6 @@ export const queryOptimization = async sql => {
       case 'LIMIT':
         sensokQuery += `LIMIT ${result.LIMIT} `;
         break;
-        
     }
   });
 
@@ -49,7 +50,7 @@ export const queryOptimization = async sql => {
         toulkorkQuery += 'SELECT ';
         _.forEach(item, value => {
           const isExist = data.toulkork[`${tableName}`].includes(value);
-          if (isExist) {
+          if (isExist || value === '*') {
             toulkorkQuery += `${value}, `;
           }
         });
@@ -63,32 +64,56 @@ export const queryOptimization = async sql => {
       case 'LIMIT':
         toulkorkQuery += `LIMIT ${result.LIMIT} `;
         break;
-        
     }
   });
 
-  const ss = await sensok(sensokQuery);
-  const tk = await toulkork(toulkorkQuery);
+  const timer = new Stopwatch();
+  timer.start();
 
-  // merge result
-  const merged = [];
+  // const ss = await sensok(sensokQuery);
+  // const tk = await toulkork(toulkorkQuery);
 
-  _.forEach(ss, (item, idx) => {
-    const index = _.findIndex(tk, { 'id': item.id });
-    if (index !== -1) {
-      merged.push({ ...item, ...tk[index] });
-      delete tk[index];
-    }
+  const results = await Promise.all([
+    sensok(sensokQuery), 
+    toulkork(toulkorkQuery)
+  ]);
+  const ss = results[0];
+  const tk = results[1];
+
+  timer.stop();
+  const queryTime = moment(timer.ms).format('s.S');
+	console.log('* : queryTime', queryTime)
+  timer.reset();
+  
+  timer.start();
+  let merged = _.map(ss, function(item){
+    return _.extend(item, _.find(tk, ['id', item.id]));
   });
 
-  // if there are still element left in tk
-  _.forEach(tk, item => {
-    if (item) {
-      merged.push(item);
-    }
-  });
+  // let merged = [];
+  // _.forEach(ss, (item, idx) => {
+  //   const index = _.findIndex(tk, { 'id': item.id });
+  //   if (index !== -1) {
+  //     merged.push({ ...item, ...tk[index] });
+  //     delete tk[index];
+  //   }
+  // });
 
-  return _.sortBy(merged, ['id']);
+  // // if there are still element left in tk
+  // _.forEach(tk, item => {
+  //   if (item) {
+  //     merged.push(item);
+  //   }
+  // });
+
+  // merged = _.sortBy(merged, ['id']);
+
+  timer.stop();
+  const joinTime = moment(timer.ms).format('s.S');
+	console.log('* : joinTime', joinTime);
+  timer.reset();
+
+  return merged;
 
 };
 
@@ -146,6 +171,26 @@ export const query = async (sql) => {
   const tk = await toulkork(sql);
   const ss = await sensok(sql);
 
-  return [ ...tk, ...ss ];
+  // merge result
+  const merged = [];
+
+  _.forEach(ss, (item, idx) => {
+    const index = _.findIndex(tk, { 'id': item.id });
+    if (index !== -1) {
+      merged.push({ ...item, ...tk[index] });
+      delete tk[index];
+    }
+  });
+
+  // if there are still element left in tk
+  _.forEach(tk, item => {
+    if (item) {
+      merged.push(item);
+    }
+  });
+
+  return _.sortBy(merged, ['id']);
+
+  // return [ ...tk, ...ss ];
 
 };
