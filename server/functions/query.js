@@ -73,19 +73,18 @@ export const queryOptimization = async sql => {
   // const ss = await sensok(sensokQuery);
   // const tk = await toulkork(toulkorkQuery);
 
-  const results = await Promise.all([
+  const rawData = await Promise.all([
     sensok(sensokQuery), 
     toulkork(toulkorkQuery)
   ]);
   // const ss = results[0];
   // const tk = results[1];
 
-  timer.stop();
-  const queryTime = moment(timer.ms).format('s.S');
-	console.log('* : queryTime', queryTime)
-  timer.reset();
+  // timer.stop();
+  // const queryTime = moment(timer.ms).format('s.S');
+  // timer.reset();
   
-  timer.start();
+  // timer.start();
   // let merged = _.map(ss, data => {
   //   const index = _.findIndex(tk, ['id', data.id]);
   //   const result = { ...data, ...tk[index] };
@@ -93,14 +92,16 @@ export const queryOptimization = async sql => {
   //   return result;
   // });
 
-  let merged = join(results, 'id');
+  const results = await join(rawData, 'id');
 
-  timer.stop();
-  const joinTime = moment(timer.ms).format('s.S');
-	console.log('* : joinTime', joinTime);
-  timer.reset();
+  // timer.stop();
+  // const joinTime = moment(timer.ms).format('s.S');
+	// console.log('* : joinTime', joinTime);
+  // timer.reset();
 
-  return merged;
+  const executedTime = timer.ms;
+
+  return { results, executedTime };
 
 };
 
@@ -175,28 +176,41 @@ export const join = async (data, key) => {
 
 export const query = async (sql) => {
 
-  const tk = await toulkork(sql);
-  const ss = await sensok(sql);
+  const timer = new Stopwatch();
+  timer.start();
 
-  // merge result
-  const merged = [];
+  const rawData = await Promise.all([
+    sensok(sql), 
+    toulkork(sql)
+  ]);
+  // const tk = await toulkork(sql);
+  // const ss = await sensok(sql);
 
-  _.forEach(ss, (item, idx) => {
-    const index = _.findIndex(tk, { 'id': item.id });
-    if (index !== -1) {
-      merged.push({ ...item, ...tk[index] });
-      delete tk[index];
-    }
-  });
+  const results = await join(rawData, 'id');
 
-  // if there are still element left in tk
-  _.forEach(tk, item => {
-    if (item) {
-      merged.push(item);
-    }
-  });
+  const executedTime = timer.ms;
 
-  return _.sortBy(merged, ['id']);
+  return { results, executedTime };
+
+  // // merge result
+  // const merged = [];
+
+  // _.forEach(ss, (item, idx) => {
+  //   const index = _.findIndex(tk, { 'id': item.id });
+  //   if (index !== -1) {
+  //     merged.push({ ...item, ...tk[index] });
+  //     delete tk[index];
+  //   }
+  // });
+
+  // // if there are still element left in tk
+  // _.forEach(tk, item => {
+  //   if (item) {
+  //     merged.push(item);
+  //   }
+  // });
+
+  // return _.sortBy(merged, ['id']);
 
   // return [ ...tk, ...ss ];
 

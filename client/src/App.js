@@ -106,6 +106,7 @@ class App extends PureComponent {
   state = {
     query: 'SELECT id, retailer, product_name, price FROM items LIMIT 5000',
     optimization: true,
+    executedTime: 0,
     loading: false,
     count: 0,
     header: null,
@@ -147,13 +148,15 @@ class App extends PureComponent {
     const { query } = this.state;
     const { status, data, message } = await queryAPI(query);
     if (status === 200) {
-      const firstData = data && data[0];
+      const { results, executedTime } = data;
+      const firstData = results && results[0];
       const header = firstData && Object.keys(firstData);
-      const count = data.length;
-      this.setState({ header, data, count });
+      const count = results.length;
+      this.setState({ header, data: results, count, executedTime });
     } else {
       this.setState({
         data: [],
+        executedTime: 0,
         error: true, 
         errorMessage: message
       });
@@ -164,13 +167,15 @@ class App extends PureComponent {
     const { query } = this.state;
     const { status, data, message } = await queryOptimizationAPI(query);
     if (status === 200) {
-      const firstData = data && data[0];
+      const { results, executedTime } = data;
+      const firstData = results && results[0];
       const header = firstData && Object.keys(firstData);
-      const count = data.length;
-      this.setState({ header, data, count });
+      const count = results.length;
+      this.setState({ header, data: results, count, executedTime });
     } else {
       this.setState({
         data: [],
+        executedTime: 0,
         error: true, 
         errorMessage: message
       });
@@ -212,6 +217,7 @@ class App extends PureComponent {
     const { 
       query,
       optimization,
+      executedTime,
       loading,
       count,
       header,
@@ -298,6 +304,10 @@ class App extends PureComponent {
                     value={count} displayType={'text'} 
                     thousandSeparator={true}
                   />
+                </Typography>
+                <Typography variant='subtitle2'>
+                  Time: &nbsp;
+                  {executedTime} ms
                 </Typography>
               </div>
 
