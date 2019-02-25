@@ -19,3 +19,22 @@ export const queryAPI = async sql => {
   }
   
 };
+
+// ----------------------------------------
+
+export const queryOptimizationAPI = async sql => {
+  
+  try {
+    
+    const method = 'post';
+    const url = `${process.env.API_URL}/queryOptimization`;
+    const data = { sql };
+
+    return await fetch({ method, url, data });
+
+  } catch (error) {
+		console.log("query -> error", error);
+    return errorHandler(error);
+  }
+  
+};

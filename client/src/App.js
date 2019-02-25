@@ -5,9 +5,11 @@ import {
   CssBaseline,
   Button,
   Fade,
+  FormControlLabel,
   Icon,
   LinearProgress,
   Paper,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -20,7 +22,10 @@ import NumberFormat from 'react-number-format';
 import grey from '@material-ui/core/colors/grey';
 import ErrorHelper from './components/ErrorHelper';
 
-import { queryAPI } from './functions/query';
+import { 
+  queryOptimizationAPI,
+  queryAPI 
+} from './functions/query';
 
 const styles = theme => ({
   root: {
@@ -59,9 +64,9 @@ const styles = theme => ({
   title: {
     marginBottom: theme.spacing.unit * 4
   },
-  btnContainer: {
+  controlContainer: {
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
   },
   textField: {
     width: '100%'
@@ -100,6 +105,7 @@ class App extends PureComponent {
 
   state = {
     query: 'SELECT id, retailer, product_name, price FROM items LIMIT 5000',
+    optimization: true,
     loading: false,
     count: 0,
     header: null,
@@ -110,6 +116,10 @@ class App extends PureComponent {
 
   handleChange = event => {
     this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleSwitchChange = event => {
+    this.setState({ optimization: event.target.checked });
   };
 
   handleShowError = errorMessage => this.setState({ error: true, errorMessage });
@@ -124,7 +134,11 @@ class App extends PureComponent {
     if (this.state.loading) return;
 
     this.setState({ loading: true }, async _ => {
-      await this.query();
+      if (this.state.optimization) {
+        await this.queryOptimization();
+      } else {
+        await this.query();
+      }
       this.setState({ loading: false });
     });
   };
@@ -138,7 +152,28 @@ class App extends PureComponent {
       const count = data.length;
       this.setState({ header, data, count });
     } else {
-      this.handleShowError(message);
+      this.setState({
+        data: [],
+        error: true, 
+        errorMessage: message
+      });
+    }
+  };
+
+  queryOptimization = async () => {
+    const { query } = this.state;
+    const { status, data, message } = await queryOptimizationAPI(query);
+    if (status === 200) {
+      const firstData = data && data[0];
+      const header = firstData && Object.keys(firstData);
+      const count = data.length;
+      this.setState({ header, data, count });
+    } else {
+      this.setState({
+        data: [],
+        error: true, 
+        errorMessage: message
+      });
     }
   };
 
@@ -176,6 +211,7 @@ class App extends PureComponent {
 
     const { 
       query,
+      optimization,
       loading,
       count,
       header,
@@ -223,7 +259,18 @@ class App extends PureComponent {
                 onChange={this.handleChange}
               />
 
-              <div className={classes.btnContainer}>              
+              <div className={classes.controlContainer}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={optimization}
+                      onChange={this.handleSwitchChange}
+                      color="primary"
+                    />
+                  }
+                  label="Optimization"
+                />
+
                 <Button 
                   type='submit'
                   size="small" 
