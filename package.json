@@ -18,6 +18,7 @@
     "babel-preset-env": "1.7.0",
     "babel-preset-stage-3": "6.24.1",
     "body-parser": "1.18.3",
+    "casual": "^1.6.0",
     "check-types": "7.4.0",
     "concurrently": "^4.1.0",
     "connect-timeout": "1.9.0",

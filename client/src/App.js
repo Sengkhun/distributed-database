@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react';
+import React, { PureComponent, memo } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
 import { 
@@ -182,17 +182,27 @@ class App extends PureComponent {
     }
   };
 
-  renderHeader = () => {
+  Header = () => {
     const { header } = this.state;
     const { classes } = this.props;
-    return header && header.map((item, idx) => (
-      <TableCell key={idx} className={classes.tableHeadCell}>
-        {item}
-      </TableCell>
-    ));
+    return (
+      <TableHead>
+        <TableRow>
+          { header && header.map((item, idx) => (
+            <TableCell 
+              key={idx} 
+              padding='checkbox' 
+              className={classes.tableHeadCell}
+            >
+              {item}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+    );
   };
 
-  renderBody = () => {
+  Body = () => {
     const { header, data } = this.state;
     const { classes } = this.props;
     let count = 0;
@@ -200,9 +210,12 @@ class App extends PureComponent {
       if (count++ > 200 || !item) return null;
       return (
         <TableRow hover key={idx}>
-          { 
-            header && header.map((key, index) => (
-              <TableCell key={index} className={classes.tableCell}>
+          { header && header.map((key, index) => (
+              <TableCell 
+                key={index} 
+                padding='checkbox' 
+                className={classes.tableCell}
+              >
                 {item[key]}
               </TableCell>
             ))
@@ -313,16 +326,11 @@ class App extends PureComponent {
 
               <Paper className={classes.output}>
                 <Table>
-                  { header && 
-                    <TableHead>
-                      <TableRow>
-                        { this.renderHeader() }
-                      </TableRow>
-                    </TableHead> }
+                  { header && <this.Header /> }
 
                   { header && data && 
                     <TableBody>
-                      { this.renderBody() }
+                      <this.Body />
                     </TableBody> }
                 </Table>
               </Paper>
