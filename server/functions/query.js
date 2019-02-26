@@ -9,7 +9,7 @@ import meanchey from '../database/meanchey';
 
 // ----------------------------------------
 
-const QUERY_KEYWORDS = ['SELECT', 'FROM', 'LIMIT', 'WHERE'];
+const QUERY_KEYWORDS = ['SELECT', 'FROM', 'WHERE', 'LIMIT'];
 
 // ----------------------------------------
 
@@ -23,9 +23,9 @@ export const queryOptimization = async (fragmentation, sql) => {
   const splitQuery = await querySplitter(sql);
 
   // generate query
-  const toulkorkQuery = await queryGenerator('toulkork', splitQuery);
-  const sensokQuery = await queryGenerator('sensok', splitQuery);
-  const meancheyQuery = await queryGenerator('meanchey', splitQuery);
+  const toulkorkQuery = await queryGenerator(fragmentation, 'toulkork', splitQuery);
+  const sensokQuery = await queryGenerator(fragmentation, 'sensok', splitQuery);
+  const meancheyQuery = await queryGenerator(fragmentation, 'meanchey', splitQuery);
 
   const rawData = await Promise.all([
     toulkorkQuery && toulkork(toulkorkQuery),
@@ -33,11 +33,17 @@ export const queryOptimization = async (fragmentation, sql) => {
     meancheyQuery && meanchey(meancheyQuery)
   ]);
 
-  const tableName = splitQuery.FROM;
-  const tableAttributes = data['sensok'][tableName];
-  const primaryKey = tableAttributes && tableAttributes[0];
+  let results = [];
+  if (fragmentation === 'vertical') {
+    const tableName = splitQuery.FROM;
+    const tableAttributes = data['sensok'][tableName];
+    const primaryKey = tableAttributes && tableAttributes[0];
+    results = await verticalJoin(rawData, primaryKey);
 
-  const results = await verticalJoin(rawData, primaryKey);
+  } else if (fragmentation === 'horizontal') {
+    results = await horizontalJoin(rawData);
+  }
+  
   const executedTime = timer.ms;
 
   return { results, executedTime };
@@ -77,16 +83,18 @@ export const querySplitter = async sql => {
 
     switch(key) {
       case 'SELECT':
-        splitQuery['SELECT'] = value.split(/[ ,]+/);
+        splitQuery[key] = value.split(/[ ,]+/);
         break;
 
       case 'FROM':
-        splitQuery['FROM'] = value;
+      case 'LIMIT':
+        splitQuery[key] = value;
         break;
 
-      case 'LIMIT':
-        splitQuery['LIMIT'] = value;
+      case 'WHERE':
+        splitQuery[key] = value;
         break;
+
     }
 
   });
@@ -97,7 +105,7 @@ export const querySplitter = async sql => {
 
 // ----------------------------------------
 
-export const queryGenerator = async (databaseName, splitQuery) => {
+export const queryGenerator = async (fragmentation, databaseName, splitQuery) => {
 
   let query = '';
 
@@ -114,7 +122,6 @@ export const queryGenerator = async (databaseName, splitQuery) => {
       switch(key) {
         
         case 'SELECT':
-
           // start generate query
           query += 'SELECT ';
           if (item.includes('*')) {
@@ -122,30 +129,75 @@ export const queryGenerator = async (databaseName, splitQuery) => {
 
           } else {
             const attributes = [];
-            _.forEach(item, columnName => {
-              if (tableAttributes.includes(columnName)) {
-                if (tableAttributes[0] !== columnName) {
+
+            if (fragmentation === 'vertical') {
+              const primaryKey = tableAttributes[0];
+              _.forEach(item, columnName => {
+                if (tableAttributes.includes(columnName)) {
+                  if (primaryKey !== columnName) {
+                    attributes.push(columnName);
+                  }
+                }
+              });
+
+            } else if (fragmentation === 'horizontal') {
+              // no work yet
+              _.forEach(item, columnName => {
+                if (tableAttributes.includes(columnName)) {
                   attributes.push(columnName);
                 }
-              }
-            });
+              });
+            }
+
             if (check.emptyArray(attributes)) {
               throw 'No attribute matched';
             } else {
-              // push primary key
-              attributes.unshift(tableAttributes[0]);
+              if (fragmentation === 'vertical') {
+                // push primary key
+                attributes.unshift(tableAttributes[0]);
+              }
             }
             query += _.join(attributes, ', ') + ' ';
           }
           break;
   
         case 'FROM':
-          query += `FROM ${item} `;
-          break;
-  
         case 'LIMIT':
-          query += `LIMIT ${item} `;
+          query += `${key} ${item} `;
           break;
+
+        case 'WHERE':
+          const values = item.split(' ');
+          if (values[0] === tableAttributes[1]) {
+            const operator = values[1];
+            const condition = values[2];
+            const min = tableAttributes[2];
+            const max = tableAttributes[3];
+            
+            switch(operator) {
+              case '<':
+                if (min >= condition) {
+                  throw 'Condition not match';
+                }
+                break;
+
+              case '>':
+                if (max <= condition) {
+                  throw 'Condition not match';
+                }
+                break;
+
+              case '=':
+                if (!(min <= condition && max >= condition)) {
+                  throw 'Condition not match';
+                }
+                break;
+            }
+
+          }
+          query += `WHERE ${item} `;
+          break;
+
       }
     });
     
@@ -182,6 +234,25 @@ export const verticalJoin = async (array, key) => {
 
 // ----------------------------------------
 
+export const horizontalJoin = async array => {
+
+  let results = [];
+  const { length } = array;
+
+  if (length === 1) {
+    results = array[0];
+
+  } else if (length > 1) {
+    _.forEach(array, values => {
+      results = [ ...results, ...values ];
+    });
+  }
+
+  return results;
+};
+
+// ----------------------------------------
+
 export const query = async (fragmentation, sql) => {
 
   const timer = new Stopwatch();
@@ -193,7 +264,13 @@ export const query = async (fragmentation, sql) => {
     meanchey(sql)
   ]);
 
-  const results = await verticalJoin(rawData, 'id');
+  let results = [];
+  if (fragmentation === 'vertical') {
+    results = await verticalJoin(rawData, 'id');
+  } else if (fragmentation === 'horizontal') {
+    results = await horizontalJoin(rawData);
+  }
+  
   const executedTime = timer.ms;
 
   return { results, executedTime };

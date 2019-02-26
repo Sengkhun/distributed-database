@@ -1,6 +1,6 @@
 const sensok = {
   'items': ['id', 'retailer', 'description', 'color'],
-  'users': ['horizontal', 'balance', 500, 100000]
+  'users': ['horizontal', 'balance', 0, 100000]
 };
 
 const toulkork = {
