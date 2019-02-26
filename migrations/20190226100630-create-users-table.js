@@ -17,7 +17,7 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db, callback) {
 
   db.createTable('users', {
-    userId: {
+    user_id: {
       type: 'int',
       unsigned: true,
       unique: true,
@@ -26,47 +26,43 @@ exports.up = function(db, callback) {
       autoIncrement: true,
       length: 10
     },
-    first_name: {
+    name: {
       type: 'string',
       notNull: true,
       length: 100
     },
-    last_name: {
+    address: {
       type: 'string',
       notNull: true,
       length: 100
     },
-    deleted_at: {
-      type: 'datetime'
-    },
-    updated_at: {
-      type: 'timestamp',
+    sex: {
+      type: 'string',
       notNull: true,
-      defaultValue: new String('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
+      length: 100
     },
-    created_at: {
-      type: 'timestamp',
+    card: {
+      type: 'string',
       notNull: true,
-      defaultValue: new String('CURRENT_TIMESTAMP')
+      length: 100
     },
-    status: {
-      type: 'smallint',
-      length: 1,
+    balance: {
+      type: 'string',
       notNull: true,
-      defaultValue: 1
+      length: 100
     }
   }, function(err) {
     if (err) {
-      console.log("Create users table -> err", err);
+      console.log("Create user table -> err", err);
       return callback(err);
     }
     return callback();
   });
-  
+
 };
 
 exports.down = function(db) {
-  return db.dropTable('users');
+  return null;
 };
 
 exports._meta = {

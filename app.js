@@ -8,6 +8,8 @@ import 'dotenv/config';
 import routes from './server/routes';
 import errorHandler from './server/errorHandler';
 
+// import './server/seeders';
+
 const app = express();
 const host = process.env.HOST;
 const port = process.env.PORT;
