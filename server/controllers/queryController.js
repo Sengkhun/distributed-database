@@ -5,8 +5,8 @@ export const queryOptimizationController = async (req, res, next) => {
   
   try {
 
-    const { sql } = req.body;
-    const data = await queryOptimization(sql);
+    const { fragmentation, sql } = req.body;
+    const data = await queryOptimization(fragmentation, sql);
 
     response(res, { data });
     
@@ -21,8 +21,8 @@ export const queryController = async (req, res, next) => {
   
   try {
 
-    const { sql } = req.body;
-    const data = await query(sql);
+    const { fragmentation, sql } = req.body;
+    const data = await query(fragmentation, sql);
 
     response(res, { data });
     

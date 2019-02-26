@@ -3,13 +3,13 @@ import errorHandler from './errorHandler';
 
 // ----------------------------------------
 
-export const queryAPI = async sql => {
+export const queryAPI = async (fragmentation, sql) => {
   
   try {
     
     const method = 'post';
     const url = `${process.env.API_URL}/query`;
-    const data = { sql };
+    const data = { fragmentation, sql };
 
     return await fetch({ method, url, data });
 
@@ -22,13 +22,13 @@ export const queryAPI = async sql => {
 
 // ----------------------------------------
 
-export const queryOptimizationAPI = async sql => {
+export const queryOptimizationAPI = async (fragmentation, sql) => {
   
   try {
     
     const method = 'post';
     const url = `${process.env.API_URL}/queryOptimization`;
-    const data = { sql };
+    const data = { fragmentation, sql };
 
     return await fetch({ method, url, data });
 

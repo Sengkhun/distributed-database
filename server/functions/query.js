@@ -13,7 +13,7 @@ const QUERY_KEYWORDS = ['SELECT', 'FROM', 'LIMIT', 'WHERE'];
 
 // ----------------------------------------
 
-export const queryOptimization = async sql => {
+export const queryOptimization = async (fragmentation, sql) => {
   
   // start time
   const timer = new Stopwatch();
@@ -37,7 +37,7 @@ export const queryOptimization = async sql => {
   const tableAttributes = data['sensok'][tableName];
   const primaryKey = tableAttributes && tableAttributes[0];
 
-  const results = await join(rawData, primaryKey);
+  const results = await verticalJoin(rawData, primaryKey);
   const executedTime = timer.ms;
 
   return { results, executedTime };
@@ -160,7 +160,7 @@ export const queryGenerator = async (databaseName, splitQuery) => {
 
 // ----------------------------------------
 
-export const join = async (array, key) => {
+export const verticalJoin = async (array, key) => {
 
   let index = 0;
   const { length } = array;
@@ -182,18 +182,18 @@ export const join = async (array, key) => {
 
 // ----------------------------------------
 
-export const query = async (sql) => {
+export const query = async (fragmentation, sql) => {
 
   const timer = new Stopwatch();
   timer.start();
 
   const rawData = await Promise.all([
     sensok(sql), 
-    toulkork(sql)
+    toulkork(sql),
+    meanchey(sql)
   ]);
 
-  const results = await join(rawData, 'id');
-
+  const results = await verticalJoin(rawData, 'id');
   const executedTime = timer.ms;
 
   return { results, executedTime };

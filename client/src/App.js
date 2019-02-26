@@ -1,14 +1,17 @@
-import React, { PureComponent, memo } from 'react';
+import React, { PureComponent } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
 import { 
   CssBaseline,
   Button,
   Fade,
+  FormControl,
   FormControlLabel,
   Icon,
   LinearProgress,
   Paper,
+  Radio,
+  RadioGroup,
   Switch,
   Table,
   TableBody,
@@ -107,6 +110,7 @@ class App extends PureComponent {
 
   state = {
     query: 'SELECT id, product_name, description, rating FROM items',
+    fragmentation: 'vertical',
     optimization: true,
     executedTime: 0,
     loading: false,
@@ -123,6 +127,10 @@ class App extends PureComponent {
 
   handleSwitchChange = event => {
     this.setState({ optimization: event.target.checked });
+  };
+
+  handleRadioChange = event => {
+    this.setState({ fragmentation: event.target.value });
   };
 
   handleShowError = errorMessage => this.setState({ error: true, errorMessage });
@@ -147,8 +155,8 @@ class App extends PureComponent {
   };
 
   query = async () => {
-    const { query } = this.state;
-    const { status, data, message } = await queryAPI(query);
+    const { query, fragmentation } = this.state;
+    const { status, data, message } = await queryAPI(fragmentation, query);
     if (status === 200) {
       const { results, executedTime } = data;
       const firstData = results && results[0];
@@ -166,8 +174,8 @@ class App extends PureComponent {
   };
 
   queryOptimization = async () => {
-    const { query } = this.state;
-    const { status, data, message } = await queryOptimizationAPI(query);
+    const { query, fragmentation } = this.state;
+    const { status, data, message } = await queryOptimizationAPI(fragmentation, query);
     if (status === 200) {
       const { results, executedTime } = data;
       const firstData = results && results[0];
@@ -231,6 +239,7 @@ class App extends PureComponent {
 
     const { 
       query,
+      fragmentation,
       optimization,
       executedTime,
       loading,
@@ -263,6 +272,29 @@ class App extends PureComponent {
               <Typography variant='h4' className={classes.title}>
                 Distributed Database
               </Typography>
+
+              <FormControl component="fieldset">
+                <RadioGroup
+                  aria-label="position"
+                  name="position"
+                  value={fragmentation}
+                  onChange={this.handleRadioChange}
+                  row
+                >
+                  <FormControlLabel
+                    value="vertical"
+                    control={<Radio color="primary" />}
+                    label="Vertical"
+                    labelPlacement="end"
+                  />
+                  <FormControlLabel
+                    value="horizontal"
+                    control={<Radio color="primary" />}
+                    label="Horizontal"
+                    labelPlacement="end"
+                  />
+                </RadioGroup>
+              </FormControl>
 
               <TextField
                 required
