@@ -23,13 +23,13 @@ export const queryOptimization = async sql => {
   const splitQuery = await querySplitter(sql);
 
   // generate query
-  const sensokQuery = await queryGenerator('sensok', splitQuery);
   const toulkorkQuery = await queryGenerator('toulkork', splitQuery);
+  const sensokQuery = await queryGenerator('sensok', splitQuery);
   const meancheyQuery = await queryGenerator('meanchey', splitQuery);
 
   const rawData = await Promise.all([
-    sensokQuery && sensok(sensokQuery),
     toulkorkQuery && toulkork(toulkorkQuery),
+    sensokQuery && sensok(sensokQuery),
     meancheyQuery && meanchey(meancheyQuery)
   ]);
 

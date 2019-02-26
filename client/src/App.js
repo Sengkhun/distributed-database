@@ -97,14 +97,16 @@ const styles = theme => ({
     textTransform: 'capitalize'
   },
   tableCell: {
-    cursor: 'pointer'
+    cursor: 'pointer',
+    paddingTop: theme.spacing.unit,
+    paddingBottom: theme.spacing.unit,
   }
 });
 
 class App extends PureComponent {
 
   state = {
-    query: 'SELECT id, retailer, product_name, price FROM items LIMIT 5000',
+    query: 'SELECT id, product_name, description, rating FROM items',
     optimization: true,
     executedTime: 0,
     loading: false,
