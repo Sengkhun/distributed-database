@@ -248,7 +248,8 @@ export const horizontalJoin = async array => {
     });
   }
 
-  return results;
+  return _.sortBy(results, 'user_id');
+  
 };
 
 // ----------------------------------------
